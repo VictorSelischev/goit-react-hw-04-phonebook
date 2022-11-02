@@ -53,6 +53,7 @@ class App extends Component {
   }
 
   addContact = data => {
+    console.log(data);
     this.state.contacts.find(
       contact => data.name.toLowerCase() === contact.name.toLocaleLowerCase()
     )
