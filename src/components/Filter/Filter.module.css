@@ -1,0 +1,13 @@
+.formAddBook__label {
+    font-size: 20px;
+}
+
+.formAddBook__input {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.formAddBook__input:focus {
+    outline-color: #0fc3dd;
+}
