@@ -1,116 +1,94 @@
-import { Component } from 'react';
 import { ContactForm } from './ContactForm/ContactForm';
 import { Section } from './Section/Section';
 import { ContactsList } from './Contacts/ContactsList';
 import { Filter } from './Filter/Filter';
+import { useState, useEffect } from 'react';
 
-class App extends Component {
-  CONTACTS_KEY = 'contacts';
-
-  state = {
-    contacts: [
+//     contacts: [
       // { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
       // { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
       // { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
       // { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
+//     ]
+
+export const App = () => {
+  const CONTACTS_KEY = 'contacts';
+  const load = key => {
+    try {
+      const serializedState = window.localStorage.getItem(key);
+      return serializedState === null ? undefined : JSON.parse(serializedState);
+    } catch (error) {
+      console.error('Get state error: ', error.message);
+    }
   };
 
-  componentDidMount() {
-    const localContacts = this.load(this.CONTACTS_KEY);
+  const [contacts, setContacts] = useState(() => {
+    return load(CONTACTS_KEY) ?? [];
+  });
+  const [filter, setFilter] = useState('');
 
-    if (localContacts !== undefined) {
-      this.setState({ contacts: localContacts });
-    }
-  }
-
-  componentDidUpdate() {
-    const { contacts } = this.state;
-    this.save(this.CONTACTS_KEY, contacts);
-  }
-
-  componentWillUnmount() {}
-
-  save = (key, value) => {
+  const save = (key, value) => {
     try {
       const serializedState = JSON.stringify(value);
-      localStorage.setItem(key, serializedState);
+      window.localStorage.setItem(key, serializedState);
+    } catch (error) {
+      console.error('Set state error: ', error.message);
     }
-    catch (error) {
-      console.error("Set state error: ", error.message);
-    }
-  }
+  };
 
-  load = key => {
-    try {
-      const serializedState = localStorage.getItem(key);
-      return serializedState === null ? undefined : JSON.parse(serializedState);
-    }
-    catch (error) {
-      console.error("Get state error: ", error.message);
-    }
-  }
+  useEffect(() => {
+    save(CONTACTS_KEY, contacts);
+  }, [contacts]);
 
-  addContact = data => {
-    console.log(data);
-    this.state.contacts.find(
+  const addContact = data => {
+    contacts.find(
       contact => data.name.toLowerCase() === contact.name.toLocaleLowerCase()
     )
       ? alert(`${data.name} is already in contacts`)
-      : this.setState(prevState => ({
-          contacts: [data, ...prevState.contacts],
-        }));
+      : setContacts(contacts => [data, ...contacts]);
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+  const deleteContact = contactId => {
+    const newArray = contacts.filter(contact => contact.id !== contactId);
+    setContacts(newArray);
   };
 
-  handleChangeFilter = evt => {
-    this.setState({ filter: evt.target.value });
+  const handleChangeFilter = evt => {
+    setFilter(evt.target.value);
   };
 
-  getVisibleContacts = () => {
-    const { contacts, filter } = this.state;
+  const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
 
-  render() {
-    const { filter } = this.state;
-    const visibleContacts = this.getVisibleContacts();
+  const visibleContacts = getVisibleContacts();
 
-    return (
-      <div
-        style={{
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          fontSize: 40,
-          color: '#010101',
-          backgroundColor: '#c0ddff',
-        }}
-      >
-        <Section title={'Phonebook'}>
-          <ContactForm onSubmitProp={this.addContact} />
-        </Section>
-        <Section title={'Contacts'}>
-          <Filter filter={filter} changeFilter={this.handleChangeFilter} />
-          <ContactsList
-            contacts={visibleContacts}
-            onDeleteContact={this.deleteContact}
-          />
-        </Section>
-      </div>
-    );
-  }
-}
-
-export { App };
+  return (
+    <div
+      style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: 40,
+        color: '#010101',
+        backgroundColor: '#c0ddff',
+      }}
+    >
+      <Section title={'Phonebook'}>
+        <ContactForm onSubmitProp={addContact} />
+      </Section>
+      <Section title={'Contacts'}>
+        <Filter filter={filter} changeFilter={handleChangeFilter} />
+        <ContactsList
+          contacts={visibleContacts}
+          onDeleteContact={deleteContact}
+        />
+      </Section>
+    </div>
+  );
+};
