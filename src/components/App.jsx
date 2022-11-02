@@ -3,6 +3,7 @@ import { Section } from './Section/Section';
 import { ContactsList } from './Contacts/ContactsList';
 import { Filter } from './Filter/Filter';
 import { useState, useEffect } from 'react';
+import { save, load } from '../services/utilitsLocalStorage';
 
 //     contacts: [
       // { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
@@ -13,28 +14,11 @@ import { useState, useEffect } from 'react';
 
 export const App = () => {
   const CONTACTS_KEY = 'contacts';
-  const load = key => {
-    try {
-      const serializedState = window.localStorage.getItem(key);
-      return serializedState === null ? undefined : JSON.parse(serializedState);
-    } catch (error) {
-      console.error('Get state error: ', error.message);
-    }
-  };
 
   const [contacts, setContacts] = useState(() => {
     return load(CONTACTS_KEY) ?? [];
   });
   const [filter, setFilter] = useState('');
-
-  const save = (key, value) => {
-    try {
-      const serializedState = JSON.stringify(value);
-      window.localStorage.setItem(key, serializedState);
-    } catch (error) {
-      console.error('Set state error: ', error.message);
-    }
-  };
 
   useEffect(() => {
     save(CONTACTS_KEY, contacts);
